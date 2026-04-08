@@ -1,7 +1,5 @@
 import datetime as dt
 from dataclasses import dataclass, fields
-import logging
-
 
 SITELOG_DEFAULTS = {
     "domes": "(A9)",
@@ -17,10 +15,14 @@ DESIRED_DEFAULTS = {
     "antenna_serial_number": "",
 }
 
+
 class SitelogSection:
     def __post_init__(self):
         for field in fields(self):
-            if field.name in SITELOG_DEFAULTS.keys() and getattr(self, field.name) == SITELOG_DEFAULTS[field.name]:
+            if (
+                field.name in SITELOG_DEFAULTS.keys()
+                and getattr(self, field.name) == SITELOG_DEFAULTS[field.name]
+            ):
                 setattr(self, field.name, DESIRED_DEFAULTS.get(field.name, ""))
 
 
