@@ -359,7 +359,6 @@ class Type003Row:
     __repr__ = __repr__
 
 
-
 NON_DIGITS = re.compile(r"\D*", flags=re.M | re.S)
 
 
@@ -467,44 +466,69 @@ def STA_created_timestamp(d: dt.datetime | None = None) -> str:
         d = dt.datetime.now()
     return d.strftime("%d-%b-%y %H:%M").upper()
 
-def get_skip_period(event_begin: dt.datetime, event_end: dt.datetime, skip_period: str) -> list[str, str]:
+
+def get_skip_period(
+    event_begin: dt.datetime, event_end: dt.datetime, skip_period: str
+) -> list[str, str]:
     datetime_str_format = "%Y %m %d"
     if not event_begin or not event_end:
         return ["          ", "          "]
     event_begin = dt.datetime.strptime(event_begin, datetime_str_format)
     event_end = dt.datetime.strptime(event_end, datetime_str_format)
 
-    if skip_period == 'week':
+    if skip_period == "week":
         # GPS weeks start on Sunday; Python's weekday() gives Monday=0, Sunday=6
         days_since_sunday_begin = (event_begin.weekday() + 1) % 7
         days_since_sunday_end = (event_end.weekday() + 1) % 7
-        event_begin = (event_begin - dt.timedelta(days=days_since_sunday_begin)).replace(hour=0, minute=0, second=0)
-        event_end = (event_end.replace(hour=0, minute=0, second=0) - dt.timedelta(days=days_since_sunday_end - 7, seconds=1))
+        event_begin = (
+            event_begin - dt.timedelta(days=days_since_sunday_begin)
+        ).replace(hour=0, minute=0, second=0)
+        event_end = event_end.replace(hour=0, minute=0, second=0) - dt.timedelta(
+            days=days_since_sunday_end - 7, seconds=1
+        )
 
     event_begin = event_begin.strftime(datetime_str_format)
     event_end = event_end.strftime(datetime_str_format)
 
     return [event_begin, event_end]
 
+
 def extract_type3_station_events(
     receivers: list[GNSSReceiverInformation],
     antennae: list[GNSSAntennaInformation],
     skip_period: str = None,
-) -> list[dict[str,str]]:
+) -> list[dict[str, str]]:
     events = []
     if not skip_period:
         return events
 
     for prev_rec, rec in zip(receivers, receivers[1:]):
-        if prev_rec.receiver_type != rec.receiver_type or prev_rec.receiver_serial_number != rec.receiver_serial_number:
+        if (
+            prev_rec.receiver_type != rec.receiver_type
+            or prev_rec.receiver_serial_number != rec.receiver_serial_number
+        ):
             remark = "receiver change"
         elif prev_rec.firmware != rec.firmware:
             remark = "firmware version change"
-        events.append({"skip_period": get_skip_period(prev_rec.date_removed, rec.date_installed, skip_period), "remark": remark})
+        events.append(
+            {
+                "skip_period": get_skip_period(
+                    prev_rec.date_removed, rec.date_installed, skip_period
+                ),
+                "remark": remark,
+            }
+        )
 
     for prev_ant, ant in zip(antennae, antennae[1:]):
         remark = "antenna change"
-        events.append({"skip_period": get_skip_period(prev_ant.date_removed, ant.date_installed, skip_period), "remark": remark})
+        events.append(
+            {
+                "skip_period": get_skip_period(
+                    prev_ant.date_removed, ant.date_installed, skip_period
+                ),
+                "remark": remark,
+            }
+        )
 
     events.sort(key=lambda x: x["skip_period"][0])
 
@@ -515,6 +539,7 @@ def extract_type3_station_events(
             events.remove(prev)
 
     return events
+
 
 def transform_sitelog_records_to_STA_lines(
     sitelog: Sitelog, type_calibration: bool = True, skip_period: str = None
@@ -558,8 +583,9 @@ def transform_sitelog_records_to_STA_lines(
         type_3_data: list[dict[str, str]] = extract_type3_station_events(
             sitelog.receivers, sitelog.antennae, skip_period=skip_period
         )
-        type_3_lines = [Type003Row(sitelog.station_id, **parameters) for parameters in type_3_data]
-
+        type_3_lines = [
+            Type003Row(sitelog.station_id, **parameters) for parameters in type_3_data
+        ]
 
     return type_1_lines, type_2_lines, type_3_lines
 
@@ -606,7 +632,9 @@ def create_sta_file_from_sitelogs(
 
         # Transform sitelog data
         type_calibration = sitelog.station_id not in individually_calibrated
-        _1, _2, _3 = transform_sitelog_records_to_STA_lines(sitelog, type_calibration, skip_period=skip_period)
+        _1, _2, _3 = transform_sitelog_records_to_STA_lines(
+            sitelog, type_calibration, skip_period=skip_period
+        )
 
         # Gather with the rest of the sitelog records
         type_1_rows.extend(_1)
