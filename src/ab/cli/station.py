@@ -69,6 +69,15 @@ def station() -> None:
     type=str,
     help="Preferred station-ID length. Choose between values `four` and `nine`. Default is to use available length in each given file.",
 )
+# define skip period for TYPE003 entries
+@click.option(
+    "-s",
+    "skip_period",
+    required=False,
+    default=None,
+    type=str,
+    help="Choose time period to skip on station events in TYPE003 entries. Default is None. Can be set to 'day' or 'week'.",
+)
 def sitelogs2sta(
     name: str,
     config: Path,
@@ -76,6 +85,7 @@ def sitelogs2sta(
     individually_calibrated: tuple[str],
     output_filename: Path,
     preferred_station_id_length: str | None = None,
+    skip_period: str | None = None,
 ) -> None:
     """
     Create a STA file from sitelogs and optional station information.
@@ -92,8 +102,8 @@ def sitelogs2sta(
     2.  Use the flag `-f` to supply a path to a custom path to a YAML file with
         arguments.
 
-    4.  Use flags `-i`, `-k`, `-o` and `-l` to supply needed and optional arguments on
-        the command line.
+    4.  Use flags `-i`, `-k`, `-o`, `-l`, and `-s` to supply needed and optional
+        arguments on the command line.
 
     The following arguments are possible:
 
@@ -158,6 +168,7 @@ def sitelogs2sta(
             sitelogs=list(sitelogs),
             individually_calibrated=individually_calibrated,
             output_sta_file=output_filename,
+            skip_period=skip_period,
         )
 
     elif name is not None:
