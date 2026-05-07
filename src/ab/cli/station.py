@@ -169,11 +169,6 @@ def sitelogs2sta(
         log.info(msg)
         print(msg)
         arguments = _campaign.load(name).get("station")
-    elif sitelogs:
-        msg = f"Create STA file from command-line-supplied sitelogs..."
-        log.info(msg)
-        print(msg)
-        arguments["sitelogs"] = list(sitelogs)
     elif configuration.load().get("station") is not None:
         msg = f"Create STA file from arguments in the common user configuration `autobernese.yaml` ..."
         log.info(msg)
@@ -181,6 +176,12 @@ def sitelogs2sta(
         arguments = configuration.load().get("station")
 
     # overwrite or complement with arguments from the command line
+    if sitelogs:
+        msg = f"Using command-line-supplied list of sitelogs = {sitelogs}..."
+        log.info(msg)
+        print(msg)
+        arguments["sitelogs"] = list(sitelogs)
+
     if individually_calibrated:
         msg = f"Using command-line-supplied value for parameter individually_calibrated = {individually_calibrated}..."
         log.info(msg)

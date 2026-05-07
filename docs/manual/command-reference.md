@@ -724,13 +724,25 @@ This has the implications that one may use the YAML aliases available in the
 campaign configuration as well as thos in the common configuration.
 
 As seen in the example configuration above, one may then create the STA file
-directly inside your campaing's STA directory. If your campaign has the name
+directly inside your campaign's STA directory. If your campaign has the name
 `CAMPAIGN`, the command one type will then be:
 
 ```sh title="Command"
 ab station sitelogs2sta -c CAMPAIGN
 ```
 
+If a campaign-specific YAML configuration is used in combination with
+command-line arguments, the latter take precedence. This way, it is possible
+to use the same list of sitelog-files from a campaign, but generate STA files
+with different parameters for `individually_calibrated`, `output_sta_file`,
+`preferred_station_id_length`, and `skip_period`. For example:
+
+```sh title="Command with command-line arguments"
+ab station sitelogs2sta -c CAMPAIGN -s week -o CAMPAIGN_skip_week.STA
+```
+
+The above command uses the settings in the YAML-file of the CAMPAIGN,
+but overrides its settings for `skip_period` and `output_sta_file`.
 
 #### `ab station sitelogs2sta -f <custom-configuration-file>`
 
@@ -756,7 +768,7 @@ ab station sitelogs2sta -f station.yaml
 
 #### `ab station sitelogs2sta -i <sitelog> -k <station-id> -o <STA-file> -l <station_id_length>`
 
-Finally, it is also possible to give all the settings to the command as
+Finally, it is also possible to give all settings as
 command-line arguments:
 
 ```sh title="Command"
@@ -765,6 +777,9 @@ ab station sitelogs2sta -i BLAH00DNK_20230101.log -i BLUH00DNK_20220101.log -k B
 
 The above, gives the same result as with the arguments given in the special
 `station.yaml` file.
+
+Importantly, when combining configuration files and command-line arguments,
+the latter take precedence.
 
 
 ## Combine troposphere hour files to day files
